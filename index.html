@@ -5,62 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Simulador de Límites – Fundación Universitaria Konrad Lorenz</title>
   <style>
-    /* ESTILOS CSS INCRUSTADOS */
-    :root{--bg:#0f172a;--card:#111827;--muted:#94a3b8;--accent:#22d3ee;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;--ink:#e5e7eb}
+    /* === PALETA Y TOKENS (igual al simulador de Derivadas) === */
+    :root{
+      --brand:#4B1D6B; --bg1:#0F0A1F; --bg2:#1A1433; --card:#18112A; --ink:#EDECF4;
+      --muted:#A7A2BD; --accent:#FF2F8E; --cta:#B7F000; --highlight:#FFE247;
+      --good:#22C55E; --warn:#F59E0B; --bad:#EF4444;
+      --deriv:#FACC15; --fx:#7DD3FC; --tan:#22C55E; --bd:#2A2243;
+    }
     *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(120deg,#0f172a,#1f2937);font:15px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--ink)}
-    .container{max-width:1100px;margin:24px auto;padding:24px}
+    body{
+      margin:0; color:var(--ink);
+      background:linear-gradient(120deg,var(--bg1),var(--bg2));
+      font:15px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    .container{max-width:1200px;margin:24px auto;padding:24px}
     header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-    header h1{font-size:20px;margin:0;font-weight:700}
-    header .tag{font-size:12px;padding:2px 8px;border-radius:999px;background:#0ea5e9;color:#001b2e}
-    .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
-    .card{background:rgba(17,24,39,.85);border:1px solid #253041;border-radius:16px;padding:16px;backdrop-filter: blur(4px)}
+    header h1{font-size:20px;margin:0;font-weight:800;letter-spacing:.2px}
+    header .tag{
+      font-size:12px;padding:2px 8px;border-radius:999px;
+      background:var(--highlight);color:#3a3100
+    }
+
+    .grid{display:grid;grid-template-columns:380px 1fr;gap:18px}
+    .card{
+      background:rgba(24,17,42,.88);
+      border:1px solid var(--bd);
+      border-radius:16px;padding:16px;backdrop-filter: blur(4px)
+    }
+
     label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-    input,select,button{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#e5e7eb}
-    input::placeholder{color:#64748b}
-    button{cursor:pointer;font-weight:600;letter-spacing:.2px}
-    button.primary{background:linear-gradient(90deg,#22d3ee,#60a5fa);color:#081018;border:none}
-    button.ghost{background:#0b1220}
+    input,select,button{
+      width:100%;padding:10px 12px;border-radius:12px;
+      border:1px solid var(--bd);background:#140F26;color:var(--ink);font-size:14px
+    }
+    input::placeholder{color:#7f78a5}
+    button{cursor:pointer;font-weight:700;letter-spacing:.2px}
+    button.primary{background:linear-gradient(90deg,var(--accent),#FF6DB1);color:#16071A;border:none}
+    button.primary:hover{filter:brightness(1.06)}
+    button.ghost{background:#140F26}
+    button.ghost:hover{border-color:#4A3B7A}
+
     .row{display:flex;gap:10px;flex-wrap:wrap}
     .row > *{flex:1}
-    .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid #334155;color:#cbd5e1}
-    .pill.good{border-color:rgba(34,197,94,.35);color:#bbf7d0}
-    .pill.warn{border-color:rgba(245,158,11,.35);color:#fde68a}
-    .pill.bad{border-color:rgba(239,68,68,.35);color:#fecaca}
-    .muted{color:#94a3b8}
-    .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-    canvas{width:100%;height:360px;border-radius:12px;background:#0b1220;border:1px solid #233047; cursor: grab;}
-    canvas:active { cursor: grabbing;}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px 10px;border-bottom:1px solid #243043}
-    th{color:#93c5fd;text-align:left;font-weight:600}
-    .footer{margin-top:14px;font-size:12px;color:#93a4bd}
-    .kbd{font:600 12px ui-monospace,monospace;background:#0b1220;border:1px solid #334155;border-bottom-width:2px;border-radius:6px;padding:2px 6px}
-    @media (max-width: 880px){
-      .grid{grid-template-columns:1fr}
-      canvas{height:280px}
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+      font-size:12px;border:1px solid #3A2E63;color:#DCD7EE
     }
-    #errorBox{display:none;margin:8px 0 0 0;padding:8px 10px;border-radius:10px;border:1px solid rgba(239,68,68,.35);color:#fecaca;background:#170c0c;font-size:12px}
+    .pill.good{border-color:rgba(34,197,94,.35);color:#CFF7D8}
+    .pill.warn{border-color:rgba(245,158,11,.35);color:#FDE69C}
+    .pill.bad{border-color:rgba(239,68,68,.35);color:#FFD2D2}
+
+    .muted{color:var(--muted)}
+    .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+    canvas{
+      width:100%;height:420px;border-radius:12px;
+      background:#120C22;border:1px solid var(--bd);
+      cursor: grab;
+    }
+    canvas:active{cursor:grabbing}
+
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px 10px;border-bottom:1px solid var(--bd)}
+    th{color:#CFE6FF;text-align:left;font-weight:700}
+
+    .footer{margin-top:12px;font-size:12px;color:#b8b3ce}
+    .kbd{
+      font:600 12px ui-monospace,monospace;background:#140F26;border:1px solid var(--bd);
+      border-bottom-width:2px;border-radius:6px;padding:2px 6px
+    }
+    #errorBox{
+      display:none;margin:8px 0 0 0;padding:8px 10px;border-radius:10px;
+      border:1px solid rgba(239,68,68,.35);color:#FFD2D2;background:#2A0E17;font-size:12px
+    }
+
+    @media (max-width: 960px){.grid{grid-template-columns:1fr}canvas{height:360px}}
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Simulador de Límites Fundación Universitaria Konrad Lorenz</h1>
-      <span class="tag">Calculo 1</span>
+      <h1>Simulador de Límites – Fundación Universitaria Konrad Lorenz</h1>
+      <span class="tag">Cálculo I · Módulo 2</span>
     </header>
 
     <div class="grid">
+      <!-- IZQUIERDA -->
       <section class="card" aria-labelledby="controls-title">
         <h2 id="controls-title" style="margin:0 0 12px 0;font-size:16px">Entradas</h2>
 
-        <label for="expr">Función f(x) <span class="muted">(usa sin, cos, tan, log, ln, log10, sqrt, abs, exp, pi, e, ^ o pow(x,y); ángulos en radianes)</span></label>
+        <label for="expr">Función f(x) <span class="muted">(sin, cos, tan, ln, log10, sqrt, abs, exp, pi, e, ^)</span></label>
         <input id="expr" class="mono" placeholder="(x^2-9)/(x-3)" value="(x^2-9)/(x-3)" />
 
         <div style="margin-top: 8px;">
-            <label for="exampleSelector" style="margin-bottom: 2px;">Cargar Ejemplo Rápido</label>
-            <select id="exampleSelector"></select>
+          <label for="exampleSelector" style="margin-bottom: 2px;">Cargar Ejemplo Rápido</label>
+          <select id="exampleSelector"></select>
         </div>
+
         <div class="row" style="margin-top:8px">
           <div>
             <label for="a">Punto a evaluar a (x → a / inf)</label>
@@ -71,10 +112,9 @@
             <input id="range" type="number" step="any" value="5" />
           </div>
         </div>
-        <p class="muted" style="margin: 4px 0 0; font-size: 11px;">Ventana: [a−R, a+R]. Para $\infty$ usa un $R$ grande (ej: 100).</p>
+        <p class="muted" style="margin: 4px 0 0; font-size: 11px;">Ventana: [a−R, a+R]. Para ∞ usa R grande (ej: 100).</p>
 
-
-        <div class="row">
+        <div class="row" style="margin-top:8px">
           <div>
             <label for="eps">Distancias iniciales (ε)</label>
             <select id="eps">
@@ -100,16 +140,22 @@
         </div>
 
         <div class="row" style="margin-top:8px">
-             <button type="button" class="ghost" id="btnFixScale">Fijar Escala</button>
-             <button type="button" class="ghost" id="btnResetView">Restablecer Vista</button>
+          <button type="button" class="ghost" id="btnFixScale">Fijar Escala</button>
+          <button type="button" class="ghost" id="btnResetView">Restablecer Vista</button>
         </div>
-        <p class="footer">Tip: <span class="kbd">Enter</span> = Calcular, <span class="kbd">Shift+Enter</span> = Graficar. **Scroll para Zoom**, **Clic y Arrastrar para Desplazar**.</p>
+
+        <p class="footer">
+          Tip: <span class="kbd">Enter</span> = Calcular, <span class="kbd">Shift+Enter</span> = Graficar.
+          Scroll = Zoom, clic+arrastrar = desplazar.
+        </p>
         <div id="errorBox" role="alert"></div>
       </section>
 
+      <!-- DERECHA -->
       <section class="card" aria-labelledby="results-title">
         <h2 id="results-title" style="margin:0 0 8px 0;font-size:16px">Resultados</h2>
         <div id="status" aria-live="polite" style="margin-bottom:10px"></div>
+
         <canvas id="plot"></canvas>
 
         <div style="margin-top:12px">
@@ -119,7 +165,7 @@
         </div>
 
         <div class="row" style="margin-top:8px">
-          <button type="button" class="ghost" id="btnPNG">Descargar imagen (PNG)</button>
+          <button type="button" class="ghost" id="btnPNG">Descargar PNG</button>
           <button type="button" class="ghost" id="btnPDF">Descargar PDF</button>
         </div>
       </section>
@@ -127,14 +173,15 @@
   </div>
 
   <script>
-    // --- CÓDIGO JAVASCRIPT INCRUSTADO ---
+    /* ========= utilidades ========= */
     const INF_STRINGS = ['inf', '+inf', 'infinity', '+infinity'];
-
     const $ = s => document.querySelector(s);
     const on = (el,ev,cb)=> el.addEventListener(ev,cb);
     function showError(msg){ const b=$('#errorBox'); if(!msg){b.style.display='none';b.textContent='';return;} b.style.display='block'; b.textContent=msg; }
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+    function roundPretty(v){if(!isFinite(v))return String(v);const a=Math.abs(v);if(a===0)return '0';if(a<1e-4||a>=1e6)return v.toExponential(3);return Number(v.toFixed(6)).toString();}
 
+    /* ========= parser expr ========= */
     function buildFn(expr){
       let s=String(expr)
         .replace(/\^/g,'**').replace(/\bpi\b/gi,'(Math.PI)').replace(/\be\b\b/gi,'(Math.E)')
@@ -149,41 +196,28 @@
         throw new Error('Expresión contiene tokens no permitidos.');
       return new Function('x','Math',`return (${s});`);
     }
-
-    function roundPretty(v){if(!isFinite(v))return String(v);const a=Math.abs(v);if(a===0)return '0';if(a<1e-4||a>=1e6)return v.toExponential(3);return Number(v.toFixed(6)).toString();}
     function safeEval(fn,x){try{const y=fn(x,Math);return isFinite(y)?y:NaN;}catch{return NaN;}}
     function median(arr){if(!arr||!arr.length)return null;const a=[...arr].sort((x,y)=>x-y);const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;}
 
+    /* ========= tabla, estimación ========= */
     function calcTable(fn,a,eps,n){
       const aStr = String($('#a').value).toLowerCase().trim();
       const isInf = INF_STRINGS.includes(aStr);
       const isNegInf = aStr === '-inf';
       const left=[], right=[];
-
       if (isInf || isNegInf) {
         const samples = [10, 31.6, 100, 316.2, 1000, 3162.2, 10000];
-        
-        samples.forEach(x_val => {
-          right.push({x: x_val, y: safeEval(fn, x_val)});
-          left.push({x: -x_val, y: safeEval(fn, -x_val)});
-        });
-        
+        samples.forEach(xv => { right.push({x:xv,y:safeEval(fn,xv)}); left.push({x:-xv,y:safeEval(fn,-xv)}); });
         return {left: isNegInf ? right : left.reverse(), right: isNegInf ? left.reverse() : right};
       }
-
       for(let k=n;k>=1;k--){const dx=eps/Math.pow(10,k-1);left.push({x:a-dx,y:safeEval(fn,a-dx)});}
       for(let k=1;k<=n;k++){const dx=eps/Math.pow(10,k-1);right.push({x:a+dx,y:safeEval(fn,a+dx)});}
       return {left,right};
     }
-
     function estimateLimit(tab){
-      const Ls=tab.left.map(p=>p.y).filter(isFinite),Rs=tab.right.map(p=>p.y).filter(isFinite);
+      const Ls=tab.left.map(p=>p.y), Rs=tab.right.map(p=>p.y);
       const near=v=>v.filter(x=>isFinite(x)&&Math.abs(x)<1e12);
-      const Lm=median(near(Ls)),Rm=median(near(Rs));
-      
-      const allLs = tab.left.map(p=>p.y);
-      const allRs = tab.right.map(p=>p.y);
-      
+      const Lm=median(near(Ls)), Rm=median(near(Rs));
       const checkInf = arr => {
         const infCount = arr.filter(v => v === Infinity).length;
         const negInfCount = arr.filter(v => v === -Infinity).length;
@@ -191,496 +225,280 @@
         if (negInfCount > infCount) return -Infinity;
         return null;
       };
-
-      const infL = checkInf(allLs);
-      const infR = checkInf(allRs);
-
-      if (infL === infR && infL !== null) return {type: 'infinite', value: infL};
-
-      if(Lm==null&&Rm==null)return{type:'unknown'};
-      if(Lm!=null&&Rm!=null){if(Math.abs(Lm-Rm)<1e-3)return{type:'finite',value:(Lm+Rm)/2};return{type:'dne'};}
-      return{type:'one-sided',left:Lm,right:Rm};
+      const infL = checkInf(Ls), infR = checkInf(Rs);
+      if (infL === infR && infL !== null) return {type:'infinite', value:infL};
+      if(Lm==null&&Rm==null) return {type:'unknown'};
+      if(Lm!=null&&Rm!=null){
+        if(Math.abs(Lm-Rm)<1e-3) return {type:'finite', value:(Lm+Rm)/2};
+        return {type:'dne'};
+      }
+      return {type:'one-sided', left:Lm, right:Rm};
     }
 
-    const canvas=$('#plot'),ctx=canvas.getContext('2d');
-    
-    let HI_RES_SCALE = 1; 
-    let scaleFixed = false; // Variable para fijar la escala
+    /* ========= canvas ========= */
+    const canvas=$('#plot'), ctx=canvas.getContext('2d');
+    let scaleFixed=false, dragYCenter=0, currentYRange=0, lastData=null, mouseX=null, mouseY=null;
 
     function resizeCanvas(){
-        const dpr=window.devicePixelRatio||1;
-        canvas.width=canvas.clientWidth*dpr;
-        canvas.height=canvas.clientHeight*dpr;
-        ctx.setTransform(dpr,0,0,dpr,0,0);
+      const dpr=window.devicePixelRatio||1;
+      canvas.width=canvas.clientWidth*dpr; canvas.height=canvas.clientHeight*dpr;
+      ctx.setTransform(dpr,0,0,dpr,0,0);
     }
-    window.addEventListener('resize',()=>{resizeCanvas();draw();});
-    let lastData=null;
-    let mouseX = null, mouseY = null;
-    let dragYCenter = 0;
-    let currentYRange = 0;
-    
-    // FUNCIÓN FINAL Y SIMPLE PARA LA ESCALA DE TICKS
-    function getNiceStep(range) {
-        let exponent = Math.floor(Math.log10(range / 5));
-        let baseStep = Math.pow(10, exponent);
-        
-        if ((range / baseStep) < 2) baseStep /= 5; 
-        else if ((range / baseStep) < 5) baseStep /= 2; 
-        
-        // Asegurarse de que no sea menor de 0.1 a menos que el rango sea muy pequeño
-        if (baseStep < 0.1 && range > 1) baseStep = 0.1;
-        
-        return baseStep;
-    }
+    window.addEventListener('resize',()=>{resizeCanvas(); draw();});
 
+    function getNiceStep(range){let e=Math.floor(Math.log10(range/5)),s=Math.pow(10,e);if((range/s)<2)s/=5;else if((range/s)<5)s/=2;return s;}
 
     function draw(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        if(!lastData) return;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      if(!lastData) return;
 
-        const {fn,a,range,tab,est} = lastData;
-        const W = canvas.clientWidth, H = canvas.clientHeight;
-        
-        const aStr = String($('#a').value).toLowerCase().trim();
-        const isInf = INF_STRINGS.includes(aStr);
-        const isNegInf = aStr === '-inf';
-        
-        let xmin = isInf || isNegInf ? (isNegInf ? -range : 0) : a - range;
-        let xmax = isInf || isNegInf ? (isNegInf ? 0 : range) : a + range;
+      // Colores desde CSS (igual patrón del de Derivadas)
+      const styles = getComputedStyle(document.documentElement);
+      const COL_FX  = styles.getPropertyValue('--fx').trim()    || '#7dd3fc';
+      const COL_L   = styles.getPropertyValue('--good').trim()  || '#22c55e';
+      const COL_AXIS= '#444';
 
+      const {fn,a,range,tab,est} = lastData;
+      const W=canvas.clientWidth, H=canvas.clientHeight;
 
-        const N = 600, xs=[], ys=[];
-        for(let i=0;i<N;i++){
-            const x = xmin + (xmax-xmin)*i/(N-1);
-            const y = safeEval(fn,x);
-            xs.push(x); ys.push(y);
-        }
-        
-        const finiteYs = ys.filter(Number.isFinite);
-        let ymin_base=finiteYs.length?Math.min(...finiteYs):-1,
-            ymax_base=finiteYs.length?Math.max(...finiteYs):1;
-        if(!isFinite(ymin_base)||!isFinite(ymax_base)||ymin_base===ymax_base){ymin_base-=1;ymax_base+=1;}
-        
-        const yCenter = dragYCenter;
-        const yRange = currentYRange || (ymax_base - ymin_base) / 2 || 1; 
+      const aStr = String($('#a').value).toLowerCase().trim();
+      const isInf = INF_STRINGS.includes(aStr);
+      const isNegInf = aStr === '-inf';
 
-        const ymin = yCenter - yRange;
-        const ymax = yCenter + yRange;
+      let xmin = isInf || isNegInf ? (isNegInf ? -range : 0) : a - range;
+      let xmax = isInf || isNegInf ? (isNegInf ? 0 : range) : a + range;
 
-        const x2px=x=>(x-xmin)/(xmax-xmin)*W,
-              y2px=y=>H-(y-ymin)/(ymax-ymin)*H;
-        
-        lastData.x2px = x2px; lastData.y2px = y2px;
-        lastData.xmin = xmin; lastData.xmax = xmax;
-        lastData.ymin = ymin; lastData.ymax = ymax;
-        lastData.W = W; lastData.H = H;
+      const N=600, xs=[], ys=[];
+      for(let i=0;i<N;i++){ const x=xmin+(xmax-xmin)*i/(N-1); xs.push(x); ys.push(safeEval(fn,x)); }
 
-        // DIBUJO DE EJES Y GRILLA
-        ctx.strokeStyle="#444"; ctx.lineWidth=1;
-        ctx.fillStyle="#94a3b8"; ctx.font="12px monospace";
+      const finiteYs=ys.filter(Number.isFinite);
+      let ymin_base=finiteYs.length?Math.min(...finiteYs):-1,
+          ymax_base=finiteYs.length?Math.max(...finiteYs):1;
+      if(!isFinite(ymin_base)||!isFinite(ymax_base)||ymin_base===ymax_base){ymin_base-=1;ymax_base+=1;}
 
-        // --- Eje X ---
-        const y0=y2px(0);
-        ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(W,y0); ctx.stroke();
-        
-        const R_x = xmax - xmin;
-        const stepX = getNiceStep(R_x); 
-        
-        for(let x=Math.ceil(xmin/stepX)*stepX; x<=xmax; x+=stepX){
-            const px=x2px(x);
-            if(px > 0 && px < W) { 
-                ctx.beginPath(); ctx.moveTo(px,y0-4); ctx.lineTo(px,y0+4); ctx.stroke();
-                ctx.fillText(roundPretty(x), px+2, y0-6);
-            }
-        }
+      const yCenter=dragYCenter;
+      const yRange=currentYRange||(ymax_base-ymin_base)/2||1;
+      const ymin=yCenter-yRange, ymax=yCenter+yRange;
 
-        // --- Eje Y ---
-        let x_axis_pos = x2px(0);
-        
-        if (x_axis_pos < 10) x_axis_pos = 10;
-        else if (x_axis_pos > W - 10) x_axis_pos = W - 10;
+      const x2px=x=>(x-xmin)/(xmax-xmin)*W, y2px=y=>H-(y-ymin)/(ymax-ymin)*H;
 
-        const x0 = x_axis_pos;
-        
-        ctx.beginPath(); ctx.moveTo(x0,0); ctx.lineTo(x0,H); ctx.stroke();
-        
-        const R_y = ymax - ymin;
-        const stepY = getNiceStep(R_y); 
+      lastData.x2px=x2px; lastData.y2px=y2px; lastData.W=W; lastData.H=H;
 
-        for(let y=Math.ceil(ymin/stepY)*stepY; y<=ymax; y+=stepY){
-            const py=y2px(y);
-            if(py > 0 && py < H) {
-                ctx.beginPath(); ctx.moveTo(x0-4,py); ctx.lineTo(x0+4,py); ctx.stroke();
-                ctx.fillText(roundPretty(y), x0+6, py-2);
-            }
-        }
+      // Ejes + ticks
+      ctx.strokeStyle=COL_AXIS; ctx.lineWidth=1; ctx.fillStyle="#C9C5DF"; ctx.font="12px monospace";
+      const y0=y2px(0); if(y0>0&&y0<H){ctx.beginPath();ctx.moveTo(0,y0);ctx.lineTo(W,y0);ctx.stroke();}
+      const stepX=getNiceStep(xmax-xmin);
+      for(let x=Math.ceil(xmin/stepX)*stepX;x<=xmax;x+=stepX){
+        const px=x2px(x); if(px>0&&px<W){ctx.beginPath();ctx.moveTo(px,y0-4);ctx.lineTo(px,y0+4);ctx.stroke();ctx.fillText(roundPretty(x),px+4,y0-6);}
+      }
+      let x0=x2px(0); if(x0<10)x0=10; else if(x0>W-10)x0=W-10;
+      ctx.beginPath();ctx.moveTo(x0,0);ctx.lineTo(x0,H);ctx.stroke();
+      const stepY=getNiceStep(ymax-ymin);
+      for(let y=Math.ceil(ymin/stepY)*stepY;y<=ymax;y+=stepY){
+        const py=y2px(y); if(py>0&&py<H){ctx.beginPath();ctx.moveTo(x0-4,py);ctx.lineTo(x0+4,py);ctx.stroke();ctx.fillText(roundPretty(y),x0+6,py-2);}
+      }
 
-        // Curva
-        ctx.strokeStyle='#7dd3fc'; ctx.lineWidth=2;
-        ctx.beginPath();
-        let pen=false;
-        for(let i=0;i<N;i++){
-            const y=ys[i], px=x2px(xs[i]), py=y2px(y);
-            if(Number.isFinite(y)){ if(!pen){ctx.moveTo(px,py);pen=true;} else ctx.lineTo(px,py); }
-            else pen=false;
-        }
-        ctx.stroke();
+      // Curva f(x)
+      ctx.strokeStyle=COL_FX; ctx.lineWidth=2.2; ctx.beginPath();
+      let pen=false; for(let i=0;i<N;i++){ const y=ys[i], px=x2px(xs[i]), py=y2px(y);
+        if(Number.isFinite(y)){ if(!pen){ctx.moveTo(px,py);pen=true;} else ctx.lineTo(px,py); } else pen=false; }
+      ctx.stroke();
 
-        // Puntos y Línea límite
-        function dots(list,color){ctx.fillStyle=color;list.forEach(p=>{
-            if(!Number.isFinite(p.y)) return;
-            const px=x2px(p.x), py=y2px(p.y);
-            ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill();
-        });}
-        dots(tab.left,'#60a5fa'); dots(tab.right,'#fb7185');
+      // Puntos de tabla
+      function dots(list,color){ctx.fillStyle=color;list.forEach(p=>{
+        if(!Number.isFinite(p.y)) return; const px=x2px(p.x), py=y2px(p.y); ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill();
+      });}
+      dots(tab.left,'#60a5fa'); dots(tab.right,'#fb7185');
 
-        if(est.type==='finite'){
-            ctx.strokeStyle='#4ade80'; ctx.setLineDash([6,6]);
-            const ly=y2px(est.value);
-            ctx.beginPath(); ctx.moveTo(0,ly); ctx.lineTo(W,ly); ctx.stroke();
-            ctx.setLineDash([]);
-        }
-
-        // Puntero rastreador (Mouse over)
-        if(mouseX !== null && mouseY !== null) {
-            const x_coord = xmin + (xmax-xmin) * mouseX/W;
-            const y_val = safeEval(fn, x_coord);
-            const px = mouseX;
-            
-            if (Number.isFinite(y_val)) {
-                const py = y2px(y_val);
-                
-                ctx.strokeStyle='#f59e0b'; ctx.setLineDash([2, 4]); ctx.lineWidth=1;
-                
-                ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
-                
-                ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
-                ctx.setLineDash([]);
-
-                ctx.fillStyle='#f59e0b';
-                ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
-
-                const text = `x=${roundPretty(x_coord)}, f(x)=${roundPretty(y_val)}`;
-                const textW = ctx.measureText(text).width;
-                const boxPadding = 8;
-                const boxX = px + 10;
-                const boxY = py - 30;
-
-                ctx.fillStyle='#000'; ctx.globalAlpha = 0.8;
-                ctx.fillRect(boxX, boxY, textW + boxPadding * 2, 20);
-                ctx.globalAlpha = 1.0;
-
-                ctx.fillStyle='#e5e7eb';
-                ctx.fillText(text, boxX + boxPadding, boxY + 15);
-            }
-        }
-    }
-
-
-    function fillTable(tab){const tb=$("#table tbody");tb.innerHTML='';const n=Math.max(tab.left.length,tab.right.length);for(let i=0;i<n;i++){const L=tab.left[i]||{},R=tab.right[i]||{};tb.insertAdjacentHTML('beforeend',`<tr><td>${L.x!==undefined?roundPretty(L.x):''}</td><td>${L.y!==undefined?roundPretty(L.y):''}</td><td>${R.x!==undefined?roundPretty(R.x):''}</td><td>${R.y!==undefined?roundPretty(R.y):''}</td></tr>`);}}
-
-    function showStatus(est,a,expr){
-      const box=$("#status");
-      const exprLower = expr.toLowerCase();
-
+      // Línea del límite si es finito
       if(est.type==='finite'){
-        box.innerHTML=`<span class="pill good">Límite estimado L ≈ ${roundPretty(est.value)}</span>`;
-      } else if(est.type==='infinite'){
-        box.innerHTML=`<span class="pill bad">Límite DIVERGE a ${est.value === Infinity ? '$\infty$' : '$-\infty$'}</span>`;
-      } else if(est.type==='dne'){
-        box.innerHTML=`<span class="pill bad">Los laterales difieren → Límite no existe</span>`;
-      } else {
-        let suggestion = "";
-        if (exprLower.includes('sqrt(') || exprLower.includes('pow(x,') && exprLower.includes('/')) {
-            suggestion = "Sugerencia: Intenta Multiplicar por el Conjugado (Libro 2).";
-        } else if (exprLower.includes('/') && !exprLower.includes('sin(') && !exprLower.includes('cos(')) {
-            suggestion = "Sugerencia: Intenta Factorizar y Simplificar (Libro 1).";
-        } else if (exprLower.includes('sin(') || exprLower.includes('tan(')) {
-            suggestion = "Sugerencia: Aplica los Límites Fundamentales Trigonométricos (Libro 3).";
+        ctx.strokeStyle=COL_L; ctx.setLineDash([6,6]);
+        const ly=y2px(est.value);
+        ctx.beginPath(); ctx.moveTo(0,ly); ctx.lineTo(W,ly); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Crosshair
+      if(mouseX!==null && mouseY!==null){
+        const x_coord = xmin + (xmax-xmin)*mouseX/W;
+        const y_val = safeEval(fn,x_coord);
+        const px = mouseX;
+        if(Number.isFinite(y_val)){
+          const py=y2px(y_val);
+          ctx.strokeStyle=styles.getPropertyValue('--warn').trim()||'#f59e0b';
+          ctx.setLineDash([2,4]); ctx.lineWidth=1;
+          ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,H); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle=styles.getPropertyValue('--warn').trim()||'#f59e0b';
+          ctx.beginPath(); ctx.arc(px,py,5,0,2*Math.PI); ctx.fill();
         }
-        
-        box.innerHTML=`<span class="pill warn">⚠️ Indeterminación. ${suggestion}</span>`;
       }
     }
+
+    /* ========= UI resultados ========= */
+    function fillTable(tab){const tb=$("#table tbody");tb.innerHTML='';const n=Math.max(tab.left.length,tab.right.length);
+      for(let i=0;i<n;i++){const L=tab.left[i]||{},R=tab.right[i]||{};
+        tb.insertAdjacentHTML('beforeend',`<tr>
+          <td>${L.x!==undefined?roundPretty(L.x):''}</td>
+          <td>${L.y!==undefined?roundPretty(L.y):''}</td>
+          <td>${R.x!==undefined?roundPretty(R.x):''}</td>
+          <td>${R.y!==undefined?roundPretty(R.y):''}</td>
+        </tr>`);}
+    }
+    function showStatus(est){
+      const styles = getComputedStyle(document.documentElement);
+      const ok = `<span class="pill good">Límite estimado L ≈ ${roundPretty(est.value)}</span>`;
+      const div = `<span class="pill bad">Límite diverge</span>`;
+      const dne = `<span class="pill bad">Laterales difieren · No existe</span>`;
+      const unk = `<span class="pill warn">Indeterminación · Revisa técnicas</span>`;
+      $('#status').innerHTML = (est.type==='finite')?ok:(est.type==='infinite')?div:(est.type==='dne')?dne:unk;
+    }
+
+    /* ========= ciclo principal ========= */
+    const canvasEl=$('#plot');
+    let isDragging=false, dragStartX=0, dragStartY=0, originalA=0, originalYCenter=0;
 
     function run(calcOnly=false){
       showError('');
       const expr=$('#expr').value.trim();
-      const aVal = $('#a').value.trim();
-      const a = parseFloat(aVal);
+      const aVal=$('#a').value.trim();
+      const a=parseFloat(aVal);
       const R=Math.max(0.01,parseFloat($('#range').value)||5);
       const eps=parseFloat($('#eps').value);
       const n=parseInt($('#samples').value,10);
+
       let fn;
       try{fn=buildFn(expr);}catch(e){showError('Error: '+e.message);return;}
-      
+
       const tab=calcTable(fn,a,eps,n);
       const est=estimateLimit(tab);
-      
-      // AUTOAJUSTE DE ESCALA Y CENTRALIZACIÓN
-      if (!scaleFixed) { // Solo autoajusta si la escala no está fijada
-          const yValues = [...tab.left.map(p=>p.y), ...tab.right.map(p=>p.y)].filter(isFinite);
-          if (yValues.length > 0) {
-              const min = Math.min(...yValues);
-              const max = Math.max(...yValues);
-              const currentCenter = (min + max) / 2;
-              const currentRange = (max - min) / 2;
-              
-              const buffer = 1.2; 
-              
-              if (currentYRange === 0 || Math.abs(currentYRange - currentRange * buffer) > 1) { // Si el primer cálculo o el rango ha cambiado significativamente
-                  // Si el límite es finito, centrar en el valor del límite L
-                  if (est.type === 'finite') {
-                      dragYCenter = est.value;
-                      currentYRange = Math.max(1, currentRange * buffer); 
-                  } else if (est.type === 'infinite' || currentRange > 20) {
-                      dragYCenter = currentCenter;
-                      currentYRange = currentRange * 1.5 || 10;
-                  } else {
-                      // VISTA POR DEFECTO: CENTRADA EN 0 (Si no hay límite finito o es muy pequeño)
-                      dragYCenter = 0; 
-                      currentYRange = 10; 
-                  }
-              }
-          } else {
-              // Si no hay datos, forzar la vista en (0,0) con rango 10
-              dragYCenter = 0;
-              currentYRange = 10;
-          }
+
+      // Autoescala (solo si no está fija)
+      if(!scaleFixed){
+        const ys=[...tab.left.map(p=>p.y),...tab.right.map(p=>p.y)].filter(isFinite);
+        if(ys.length){
+          const min=Math.min(...ys), max=Math.max(...ys);
+          const center=(min+max)/2, range=(max-min)/2;
+          if(est.type==='finite'){dragYCenter=est.value; currentYRange=Math.max(1, range*1.2);}
+          else if(range>20){dragYCenter=center; currentYRange=range*1.5||10;}
+          else{dragYCenter=0; currentYRange=10;}
+        }else{dragYCenter=0; currentYRange=10;}
       }
 
-      fillTable(tab);
-      showStatus(est,a,expr);
+      fillTable(tab); showStatus(est);
       lastData={fn,a,range:R,tab,est};
 
-      mouseX = null; 
-      
-      if(!calcOnly){resizeCanvas();draw();}
+      if(!calcOnly){resizeCanvas(); draw();}
     }
 
+    /* ========= eventos ========= */
     on($('#btnCalc'),'click',()=>run(true));
     on($('#btnPlot'),'click',()=>run(false));
-    document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey)run(true);if(e.key==='Enter'&&e.shiftKey)run(false);});
+    document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey)run(true); if(e.key==='Enter'&&e.shiftKey)run(false);});
 
-    function getMousePos(evt) {
-        const rect = canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio||1;
-        return {
-            x: (evt.clientX - rect.left) * dpr / (canvas.width / canvas.clientWidth),
-            y: (evt.clientY - rect.top) * dpr / (canvas.height / canvas.clientHeight)
-        };
+    function getMousePos(evt){
+      const r=canvas.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+      return {x:(evt.clientX-r.left)*dpr/(canvas.width/canvas.clientWidth),
+              y:(evt.clientY-r.top)*dpr/(canvas.height/canvas.clientHeight)};
     }
-
-    function handleMouseMove(e) {
-        if (!lastData) return;
-        const pos = getMousePos(e);
-        mouseX = pos.x;
-        mouseY = pos.y;
-        draw();
-    }
-
-    on(canvas, 'mouseout', ()=> { mouseX = null; mouseY = null; draw(); });
-    
-    let isDragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let originalA = 0;
-    let originalYCenter = 0;
-
-    on(canvas, 'mousedown', e => {
-        if (e.button === 0) {
-            isDragging = true;
-            dragStartX = e.clientX;
-            dragStartY = e.clientY;
-            originalA = parseFloat($('#a').value) || 0;
-            originalYCenter = dragYCenter;
-            canvas.style.cursor = 'grabbing';
-            mouseX = null;
-            draw();
-        }
-    });
-
-    on(canvas, 'mouseup', () => {
-        isDragging = false;
-        canvas.style.cursor = 'grab';
-    });
-    
-    on(canvas, 'mousemove', e => {
-        if (isDragging && lastData) {
-            const dragDeltaX = e.clientX - dragStartX;
-            const dragDeltaY = e.clientY - dragStartY;
-            
-            const R = parseFloat($('#range').value);
-            const W = lastData.W, H = lastData.H; 
-            
-            const x_scale = (R * 2) / W; 
-            const delta_a = -dragDeltaX * x_scale; 
-            const newA = originalA + delta_a;
-            $('#a').value = newA.toFixed(4);
-            
-            const yRange = currentYRange;
-            const y_scale = (yRange * 2) / H; 
-            const delta_yCenter = dragDeltaY * y_scale;
-
-            dragYCenter = originalYCenter + delta_yCenter;
-
-            dragStartX = e.clientX;
-            dragStartY = e.clientY;
-            originalA = newA;
-            originalYCenter = dragYCenter;
-            
-            run(false);
-        } else {
-            handleMouseMove(e); 
-        }
-    });
-
-    function handleWheelZoom(e){
-      e.preventDefault();
-      const rangeInput = $('#range');
-      let currentRange = parseFloat(rangeInput.value);
-      if(isNaN(currentRange) || currentRange <= 0) currentRange = 5;
-
-      const factor = e.deltaY < 0 ? 0.75 : 1.33; 
-      let newRange = currentRange * factor;
-
-      newRange = Math.max(0.01, Math.min(1000, newRange));
-
-      rangeInput.value = newRange.toFixed(3); 
-      run(false);
-    }
-    on(canvas, 'wheel', handleWheelZoom);
-    
-    // FUNCIONES PARA CONTROLAR LA ESCALA (NUEVO)
-    on($('#btnFixScale'), 'click', () => {
-        scaleFixed = !scaleFixed;
-        const btn = $('#btnFixScale');
-        btn.textContent = scaleFixed ? 'Escala FIJA (Zoom/Desplaz. Manual)' : 'Fijar Escala';
-        btn.classList.toggle('primary');
+    on(canvasEl,'mouseout',()=>{mouseX=null; mouseY=null; draw();});
+    on(canvasEl,'mousemove',e=>{
+      if(isDragging&&lastData){
+        const dx=e.clientX-dragStartX, dy=e.clientY-dragStartY;
+        const R=parseFloat($('#range').value), W=lastData.W, H=lastData.H;
+        const x_scale=(R*2)/W, delta_a=-dx*x_scale, newA=(parseFloat($('#a').value)||0)+delta_a;
+        $('#a').value=newA.toFixed(4);
+        const y_scale=(currentYRange*2)/H, delta_y=dy*y_scale;
+        dragYCenter = originalYCenter + delta_y;
+        dragStartX=e.clientX; dragStartY=e.clientY; originalYCenter=dragYCenter;
         run(false);
-    });
-
-    on($('#btnResetView'), 'click', () => {
-        // Restablecer al origen (0,0) y rango Y predefinido
-        currentYRange = 10; 
-        dragYCenter = 0;
-        scaleFixed = false;
-        $('#btnFixScale').textContent = 'Fijar Escala';
-        $('#btnFixScale').classList.remove('primary');
-        $('#range').value = 5; // Restaurar rango X predeterminado
-        run(false);
-    });
-    // FIN FUNCIONES CONTROL ESCALA
-    
-    const EXAMPLES = [
-      { name: 'Polinomios: x^2+3x (x->2) [L=10]', expr: 'x^2+3*x', a: 2 },
-      { name: 'Racional: (x^2-9)/(x-3) (x->3) [L=6]', expr: '(x^2-9)/(x-3)', a: 3 },
-      { name: 'Raíces: (sqrt(x)-3)/(x-9) (x->9) [L=1/6]', expr: '(sqrt(x)-3)/(x-9)', a: 9 },
-      { name: 'Trig.: sin(5x)/x (x->0) [L=5]', expr: 'sin(5*x)/x', a: 0 },
-      { name: 'Exponencial: e^(2x) (x->0) [L=1]', expr: 'exp(2*x)', a: 0 },
-      { name: 'Logaritmo: ln(x) (x->0+) [L=-inf]', expr: 'ln(x)', a: 0.00000001 },
-      { name: 'Asintótico: 1/x (x->inf) [L=0]', expr: '1/x', a: 'inf' },
-      { name: 'Dominio: e^x/x^2 (x->inf) [L=inf]', expr: 'exp(x)/x^2', a: 'inf' }
-    ];
-
-    function loadExample(index) {
-      if (index === '') return;
-      const example = EXAMPLES[index];
-      $('#expr').value = example.expr;
-      $('#a').value = example.a;
-      $('#range').value = 5;
-      
-      if (String(example.a).toLowerCase().includes('inf')) {
-          $('#range').value = 50;
+      }else{
+        const p=getMousePos(e); mouseX=p.x; mouseY=p.y; draw();
       }
-      
-      // Reinicia la escala al cargar un nuevo ejemplo al origen (0,0)
-      currentYRange = 10;
-      dragYCenter = 0;
-      scaleFixed = false;
-      $('#btnFixScale').textContent = 'Fijar Escala';
-      $('#btnFixScale').classList.remove('primary');
+    });
+    on(canvasEl,'mousedown',e=>{
+      if(e.button!==0) return;
+      isDragging=true; dragStartX=e.clientX; dragStartY=e.clientY;
+      originalA=parseFloat($('#a').value)||0; originalYCenter=dragYCenter;
+      canvasEl.style.cursor='grabbing'; mouseX=null; draw();
+    });
+    on(canvasEl,'mouseup',()=>{isDragging=false; canvasEl.style.cursor='grab';});
+    on(canvasEl,'wheel',e=>{
+      e.preventDefault();
+      let R=parseFloat($('#range').value)||5;
+      const factor=e.deltaY<0?0.75:1.33; R=Math.max(0.01, Math.min(1000, R*factor));
+      $('#range').value=R.toFixed(3); run(false);
+    });
 
+    on($('#btnFixScale'),'click',()=>{
+      scaleFixed=!scaleFixed;
+      const btn=$('#btnFixScale');
+      btn.textContent=scaleFixed?'Escala FIJA (zoom/drag manual)':'Fijar Escala';
+      btn.classList.toggle('primary'); run(false);
+    });
+    on($('#btnResetView'),'click',()=>{
+      currentYRange=10; dragYCenter=0; scaleFixed=false;
+      $('#btnFixScale').textContent='Fijar Escala'; $('#btnFixScale').classList.remove('primary');
+      $('#range').value=5; run(false);
+    });
+
+    /* ========= ejemplos ========= */
+    const EXAMPLES=[
+      { name:'Polinomio: x^2+3x (x→2) [L=10]', expr:'x^2+3*x', a:2 },
+      { name:'Racional: (x^2-9)/(x-3) (x→3) [L=6]', expr:'(x^2-9)/(x-3)', a:3 },
+      { name:'Raíces: (sqrt(x)-3)/(x-9) (x→9) [L=1/6]', expr:'(sqrt(x)-3)/(x-9)', a:9 },
+      { name:'Trig.: sin(5x)/x (x→0) [L=5]', expr:'sin(5*x)/x', a:0 },
+      { name:'Exponencial: e^(2x) (x→0) [L=1]', expr:'exp(2*x)', a:0 },
+      { name:'Log: ln(x) (x→0+) [−∞]', expr:'ln(x)', a:1e-8 },
+      { name:'Asint.: 1/x (x→∞) [0]', expr:'1/x', a:'inf' },
+      { name:'Dominio: e^x/x^2 (x→∞) [∞]', expr:'exp(x)/x^2', a:'inf' }
+    ];
+    function loadExample(i){
+      if(i==='')return; const ex=EXAMPLES[i];
+      $('#expr').value=ex.expr; $('#a').value=ex.a; $('#range').value=String(String(ex.a).includes('inf')?50:5);
+      currentYRange=10; dragYCenter=0; scaleFixed=false;
+      $('#btnFixScale').textContent='Fijar Escala'; $('#btnFixScale').classList.remove('primary');
       run(false);
     }
+    (function initExamples(){
+      const sel=$('#exampleSelector'); sel.innerHTML='<option value="">Cargar Ejemplo Rápido</option>';
+      EXAMPLES.forEach((ex,i)=>{const o=document.createElement('option'); o.value=i; o.textContent=ex.name; sel.appendChild(o);});
+      on(sel,'change',e=>loadExample(e.target.value));
+    })();
 
-    function initExamples() {
-      const select = $('#exampleSelector');
-      select.innerHTML = '<option value="">Cargar Ejemplo Rápido</option>';
-      EXAMPLES.forEach((ex, i) => {
-        const option = document.createElement('option');
-        option.value = i;
-        option.textContent = ex.name;
-        select.appendChild(option);
-      });
-      on(select, 'change', e => loadExample(e.target.value));
-    }
-    
+    /* ========= exportar ========= */
     function downloadImage(){
-        if(!lastData){showError('Primero calcula un límite');return;}
-        resizeCanvas();
-        draw();
-        const link=document.createElement('a');
-        link.download='limite.png';
-        link.href=canvas.toDataURL('image/png');
-        link.click();
+      if(!lastData){showError('Primero calcula un límite');return;}
+      resizeCanvas(); draw();
+      const a=document.createElement('a'); a.download='limite.png'; a.href=canvas.toDataURL('image/png'); a.click();
     }
-
     function downloadPDF(){
-        if(!lastData){showError('Primero calcula un límite');return;}
-        resizeCanvas();
-        draw();
-        const dataUrl=canvas.toDataURL('image/png');
-        
-        const expr=$('#expr').value;
-        const aVal=$('#a').value;
-        const estStatus = $('#status').innerHTML;
-        
-        const html=`
-        <!doctype html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <title>Reporte de Límite</title>
-            <style>
-                body { font-family: sans-serif; margin: 40px; }
-                h1 { color: #1e293b; font-size: 24px; border-bottom: 2px solid #ccc; padding-bottom: 10px;}
-                img { max-width: 100%; height: auto; border: 1px solid #ddd; margin-top: 20px;}
-                .details p { margin: 5px 0; }
-                @media print {
-                    @page { margin: 1cm; }
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Simulador de Límites FUKL - Reporte</h1>
-            <div class="details">
-                <p><strong>Función f(x):</strong> ${escapeHtml(expr)}</p>
-                <p><strong>Punto de Evaluación:</strong> $x \\to$ ${escapeHtml(aVal)}</p>
-                <p><strong>Resultado Estimado:</strong> ${estStatus}</p>
-            </div>
-            
-            <img src="${dataUrl}" alt="Gráfica del límite">
-        </body>
-        </html>`;
-        
-        const w=window.open('','_blank');
-        w.document.open();
-        w.document.write(html);
-        w.document.close();
-        
-        setTimeout(() => {
-            w.print();
-            w.close();
-        }, 500); 
+      if(!lastData){showError('Primero calcula un límite');return;}
+      resizeCanvas(); draw();
+      const dataUrl=canvas.toDataURL('image/png');
+      const expr=$('#expr').value, aVal=$('#a').value, estStatus=$('#status').innerHTML;
+      const html=`<!doctype html><html><head><meta charset="utf-8"><title>Reporte de Límite</title>
+      <style>body{font-family:system-ui,sans-serif;margin:40px;background:#f8f9fa}
+      h1{color:#1e293b;font-size:24px;border-bottom:2px solid #e2e8f0;padding-bottom:10px}
+      .card{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-top:20px}
+      img{max-width:100%;height:auto;border:1px solid #ddd;border-radius:8px;margin-top:20px}
+      p{margin:8px 0;font-size:16px}code{background:#e2e8f0;padding:2px 6px;border-radius:4px;font-family:monospace;word-break:break-all;}
+      @media print{@page{margin:1cm}body{background:white}}</style></head>
+      <body><h1>Simulador de Límites – Reporte</h1>
+      <div class="card">
+        <p><b>Función:</b> <code>${escapeHtml(expr)}</code></p>
+        <p><b>Punto:</b> <code>x→${escapeHtml(aVal)}</code></p>
+        <p><b>Resultado:</b> ${estStatus}</p>
+      </div><img src="${dataUrl}" alt="Gráfica del límite"></body></html>`;
+      const w=window.open('','_blank'); w.document.open(); w.document.write(html); w.document.close();
+      setTimeout(()=>{w.print();w.close();},500);
     }
-
     on($('#btnPNG'),'click',downloadImage);
     on($('#btnPDF'),'click',downloadPDF);
 
-    initExamples();
-    resizeCanvas();
-    run(false); // Ejecutar run() para asegurar la vista inicial (0,0)
+    /* ========= init ========= */
+    resizeCanvas(); run(false);
   </script>
 </body>
 </html>
