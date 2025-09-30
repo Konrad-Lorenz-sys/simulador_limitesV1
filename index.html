@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Simulador de Límites – Fundación Universitaria Konrad Lorenz</title>
   <style>
-    /* === PALETA Y TOKENS (igual al simulador de Derivadas) === */
+    /* === PALETA Y TOKENS === */
     :root{
       --brand:#4B1D6B; --bg1:#0F0A1F; --bg2:#1A1433; --card:#18112A; --ink:#EDECF4;
       --muted:#A7A2BD; --accent:#FF2F8E; --cta:#B7F000; --highlight:#FFE247;
       --good:#22C55E; --warn:#F59E0B; --bad:#EF4444;
-      --deriv:#FACC15; --fx:#7DD3FC; --tan:#22C55E; --bd:#2A2243;
+      --fx:#7DD3FC; --bd:#2A2243;
     }
     *{box-sizing:border-box}
     body{
@@ -19,7 +19,11 @@
       font:15px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;
     }
     .container{max-width:1200px;margin:24px auto;padding:24px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    header{
+      display:flex;flex-direction:column;align-items:center;gap:8px;
+      margin-bottom:20px;text-align:center
+    }
+    header img{max-height:80px;width:auto}
     header h1{font-size:20px;margin:0;font-weight:800;letter-spacing:.2px}
     header .tag{
       font-size:12px;padding:2px 8px;border-radius:999px;
@@ -79,12 +83,27 @@
       border:1px solid rgba(239,68,68,.35);color:#FFD2D2;background:#2A0E17;font-size:12px
     }
 
-    @media (max-width: 960px){.grid{grid-template-columns:1fr}canvas{height:360px}}
+    @media (max-width: 1024px){
+      .grid{grid-template-columns:1fr}
+      canvas{height:360px}
+    }
+
+    /* === Enlace externo + CTA Symbolab === */
+    .extnote{margin-top:8px;font-size:12px;color:#b8b3ce}
+    .extlink{color:#FFE247;text-decoration:none;border-bottom:1px dotted #FFE247}
+    .extlink:hover{opacity:.9}
+    .cta-out{
+      display:inline-block;margin-top:6px;padding:8px 12px;border-radius:10px;
+      background:linear-gradient(90deg,var(--accent),#FF6DB1);color:#16071A;
+      font-weight:800;letter-spacing:.2px;text-decoration:none;border:1px solid rgba(255,255,255,.1)
+    }
+    .cta-out:hover{filter:brightness(1.06)}
   </style>
 </head>
 <body>
   <div class="container">
     <header>
+      <img src="https://www.konradlorenz.edu.co/wp-content/themes/andreco/images/logo-konrad.png" alt="Logo Konrad Lorenz">
       <h1>Simulador de Límites – Fundación Universitaria Konrad Lorenz</h1>
       <span class="tag">Cálculo I · Módulo 2</span>
     </header>
@@ -148,6 +167,19 @@
           Tip: <span class="kbd">Enter</span> = Calcular, <span class="kbd">Shift+Enter</span> = Graficar.
           Scroll = Zoom, clic+arrastrar = desplazar.
         </p>
+
+        <!-- Enlace externo + CTA a Symbolab -->
+        <p class="extnote">
+          ¿Necesitas graficar funciones con más herramientas? Prueba la
+          <a class="extlink" href="https://es.symbolab.com/graphing-calculator" target="_blank" rel="noopener noreferrer">
+            Calculadora Gráfica de Symbolab
+          </a>.
+          <br>
+          <a class="cta-out" href="https://es.symbolab.com/graphing-calculator" target="_blank" rel="noopener noreferrer">
+            Abrir Symbolab en una pestaña nueva
+          </a>
+        </p>
+
         <div id="errorBox" role="alert"></div>
       </section>
 
@@ -156,7 +188,7 @@
         <h2 id="results-title" style="margin:0 0 8px 0;font-size:16px">Resultados</h2>
         <div id="status" aria-live="polite" style="margin-bottom:10px"></div>
 
-        <canvas id="plot"></canvas>
+        <canvas id="plot" aria-label="Gráfico de la función y puntos cercanos a a"></canvas>
 
         <div style="margin-top:12px">
           <table id="table"><thead><tr>
@@ -246,13 +278,16 @@
     }
     window.addEventListener('resize',()=>{resizeCanvas(); draw();});
 
-    function getNiceStep(range){let e=Math.floor(Math.log10(range/5)),s=Math.pow(10,e);if((range/s)<2)s/=5;else if((range/s)<5)s/=2;return s;}
+    function getNiceStep(range){
+      let e=Math.floor(Math.log10(range/5)), s=Math.pow(10,e);
+      if((range/s)<2) s/=5; else if((range/s)<5) s/=2;
+      return s;
+    }
 
     function draw(){
       ctx.clearRect(0,0,canvas.width,canvas.height);
       if(!lastData) return;
 
-      // Colores desde CSS (igual patrón del de Derivadas)
       const styles = getComputedStyle(document.documentElement);
       const COL_FX  = styles.getPropertyValue('--fx').trim()    || '#7dd3fc';
       const COL_L   = styles.getPropertyValue('--good').trim()  || '#22c55e';
@@ -284,33 +319,47 @@
 
       lastData.x2px=x2px; lastData.y2px=y2px; lastData.W=W; lastData.H=H;
 
-      // Ejes + ticks
+      /* === Ejes + ticks con números === */
       ctx.strokeStyle=COL_AXIS; ctx.lineWidth=1; ctx.fillStyle="#C9C5DF"; ctx.font="12px monospace";
-      const y0=y2px(0); if(y0>0&&y0<H){ctx.beginPath();ctx.moveTo(0,y0);ctx.lineTo(W,y0);ctx.stroke();}
+
+      // Eje X
       const stepX=getNiceStep(xmax-xmin);
+      const y0=y2px(0);
+      if(y0>0&&y0<H){ctx.beginPath();ctx.moveTo(0,y0);ctx.lineTo(W,y0);ctx.stroke();}
       for(let x=Math.ceil(xmin/stepX)*stepX;x<=xmax;x+=stepX){
-        const px=x2px(x); if(px>0&&px<W){ctx.beginPath();ctx.moveTo(px,y0-4);ctx.lineTo(px,y0+4);ctx.stroke();ctx.fillText(roundPretty(x),px+4,y0-6);}
+        const px=x2px(x);
+        if(px>0&&px<W){
+          ctx.beginPath();ctx.moveTo(px,y0-4);ctx.lineTo(px,y0+4);ctx.stroke();
+          ctx.fillText(roundPretty(x),px+4,Math.max(12,y0-6));
+        }
       }
+
+      // Eje Y
       let x0=x2px(0); if(x0<10)x0=10; else if(x0>W-10)x0=W-10;
       ctx.beginPath();ctx.moveTo(x0,0);ctx.lineTo(x0,H);ctx.stroke();
       const stepY=getNiceStep(ymax-ymin);
       for(let y=Math.ceil(ymin/stepY)*stepY;y<=ymax;y+=stepY){
-        const py=y2px(y); if(py>0&&py<H){ctx.beginPath();ctx.moveTo(x0-4,py);ctx.lineTo(x0+4,py);ctx.stroke();ctx.fillText(roundPretty(y),x0+6,py-2);}
+        const py=y2px(y);
+        if(py>0&&py<H){
+          ctx.beginPath();ctx.moveTo(x0-4,py);ctx.lineTo(x0+4,py);ctx.stroke();
+          ctx.fillText(roundPretty(y),x0+6,py-2);
+        }
       }
 
-      // Curva f(x)
+      /* === Curva f(x) === */
       ctx.strokeStyle=COL_FX; ctx.lineWidth=2.2; ctx.beginPath();
       let pen=false; for(let i=0;i<N;i++){ const y=ys[i], px=x2px(xs[i]), py=y2px(y);
         if(Number.isFinite(y)){ if(!pen){ctx.moveTo(px,py);pen=true;} else ctx.lineTo(px,py); } else pen=false; }
       ctx.stroke();
 
-      // Puntos de tabla
+      /* === Puntos de tabla === */
       function dots(list,color){ctx.fillStyle=color;list.forEach(p=>{
-        if(!Number.isFinite(p.y)) return; const px=x2px(p.x), py=y2px(p.y); ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill();
+        if(!Number.isFinite(p.y)) return; const px=x2px(p.x), py=y2px(p.y);
+        ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill();
       });}
       dots(tab.left,'#60a5fa'); dots(tab.right,'#fb7185');
 
-      // Línea del límite si es finito
+      /* === Línea del límite si es finito === */
       if(est.type==='finite'){
         ctx.strokeStyle=COL_L; ctx.setLineDash([6,6]);
         const ly=y2px(est.value);
@@ -318,36 +367,38 @@
         ctx.setLineDash([]);
       }
 
-      // Crosshair
+      /* === Crosshair === */
       if(mouseX!==null && mouseY!==null){
         const x_coord = xmin + (xmax-xmin)*mouseX/W;
         const y_val = safeEval(fn,x_coord);
         const px = mouseX;
         if(Number.isFinite(y_val)){
           const py=y2px(y_val);
-          ctx.strokeStyle=styles.getPropertyValue('--warn').trim()||'#f59e0b';
+          ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--warn').trim()||'#f59e0b';
           ctx.setLineDash([2,4]); ctx.lineWidth=1;
           ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,H); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke();
           ctx.setLineDash([]);
-          ctx.fillStyle=styles.getPropertyValue('--warn').trim()||'#f59e0b';
-          ctx.beginPath(); ctx.arc(px,py,5,0,2*Math.PI); ctx.fill();
+          ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--warn').trim()||'#f59e0b';
+          ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2); ctx.fill();
         }
       }
     }
 
     /* ========= UI resultados ========= */
-    function fillTable(tab){const tb=$("#table tbody");tb.innerHTML='';const n=Math.max(tab.left.length,tab.right.length);
-      for(let i=0;i<n;i++){const L=tab.left[i]||{},R=tab.right[i]||{};
-        tb.insertAdjacentHTML('beforeend',`<tr>
-          <td>${L.x!==undefined?roundPretty(L.x):''}</td>
-          <td>${L.y!==undefined?roundPretty(L.y):''}</td>
-          <td>${R.x!==undefined?roundPretty(R.x):''}</td>
-          <td>${R.y!==undefined?roundPretty(R.y):''}</td>
-        </tr>`);}
+    function fillTable(tab){
+      const tb=$("#table tbody"); tb.innerHTML='';
+      const n=Math.max(tab.left.length,tab.right.length);
+      for(let i=0;i<n;i++){ const L=tab.left[i]||{}, R=tab.right[i]||{};
+        tb.insertAdjacentHTML('beforeend', `<tr>
+          <td class="mono">${L.x!==undefined?roundPretty(L.x):''}</td>
+          <td class="mono">${L.y!==undefined?roundPretty(L.y):''}</td>
+          <td class="mono">${R.x!==undefined?roundPretty(R.x):''}</td>
+          <td class="mono">${R.y!==undefined?roundPretty(R.y):''}</td>
+        </tr>`);
+      }
     }
     function showStatus(est){
-      const styles = getComputedStyle(document.documentElement);
       const ok = `<span class="pill good">Límite estimado L ≈ ${roundPretty(est.value)}</span>`;
       const div = `<span class="pill bad">Límite diverge</span>`;
       const dne = `<span class="pill bad">Laterales difieren · No existe</span>`;
@@ -357,7 +408,7 @@
 
     /* ========= ciclo principal ========= */
     const canvasEl=$('#plot');
-    let isDragging=false, dragStartX=0, dragStartY=0, originalA=0, originalYCenter=0;
+    let isDragging=false, dragStartX=0, dragStartY=0, originalYCenter=0;
 
     function run(calcOnly=false){
       showError('');
@@ -374,14 +425,14 @@
       const tab=calcTable(fn,a,eps,n);
       const est=estimateLimit(tab);
 
-      // Autoescala (solo si no está fija)
+      // Autoescala (si no está fija)
       if(!scaleFixed){
         const ys=[...tab.left.map(p=>p.y),...tab.right.map(p=>p.y)].filter(isFinite);
         if(ys.length){
           const min=Math.min(...ys), max=Math.max(...ys);
-          const center=(min+max)/2, range=(max-min)/2;
+          const range=(max-min)/2;
           if(est.type==='finite'){dragYCenter=est.value; currentYRange=Math.max(1, range*1.2);}
-          else if(range>20){dragYCenter=center; currentYRange=range*1.5||10;}
+          else if(range>20){dragYCenter=(min+max)/2; currentYRange=range*1.5||10;}
           else{dragYCenter=0; currentYRange=10;}
         }else{dragYCenter=0; currentYRange=10;}
       }
@@ -395,7 +446,10 @@
     /* ========= eventos ========= */
     on($('#btnCalc'),'click',()=>run(true));
     on($('#btnPlot'),'click',()=>run(false));
-    document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey)run(true); if(e.key==='Enter'&&e.shiftKey)run(false);});
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Enter'&&!e.shiftKey) run(true);
+      if(e.key==='Enter'&&e.shiftKey) run(false);
+    });
 
     function getMousePos(evt){
       const r=canvas.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
@@ -420,7 +474,7 @@
     on(canvasEl,'mousedown',e=>{
       if(e.button!==0) return;
       isDragging=true; dragStartX=e.clientX; dragStartY=e.clientY;
-      originalA=parseFloat($('#a').value)||0; originalYCenter=dragYCenter;
+      originalYCenter=dragYCenter;
       canvasEl.style.cursor='grabbing'; mouseX=null; draw();
     });
     on(canvasEl,'mouseup',()=>{isDragging=false; canvasEl.style.cursor='grab';});
@@ -451,7 +505,7 @@
       { name:'Trig.: sin(5x)/x (x→0) [L=5]', expr:'sin(5*x)/x', a:0 },
       { name:'Exponencial: e^(2x) (x→0) [L=1]', expr:'exp(2*x)', a:0 },
       { name:'Log: ln(x) (x→0+) [−∞]', expr:'ln(x)', a:1e-8 },
-      { name:'Asint.: 1/x (x→∞) [0]', expr:'1/x', a:'inf' },
+      { name:'Asínt.: 1/x (x→∞) [0]', expr:'1/x', a:'inf' },
       { name:'Dominio: e^x/x^2 (x→∞) [∞]', expr:'exp(x)/x^2', a:'inf' }
     ];
     function loadExample(i){
